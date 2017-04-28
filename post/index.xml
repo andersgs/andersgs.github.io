@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Posts on dsci&#39;nomics</title>
+    <link>/post/</link>
+    <description>Recent content in Posts on dsci&#39;nomics</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>&amp;copy; 2017 Anders Gonçalves da Silva</copyright>
+    <lastBuildDate>Sun, 01 Jan 2017 00:00:00 +0000</lastBuildDate>
+    <atom:link href="/post/" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>R upgrading can be a smooth process</title>
+      <link>/post/2017-04-28-upgrade-to-r-3-4-0/</link>
+      <pubDate>Fri, 28 Apr 2017 12:00:00 +0000</pubDate>
+      
+      <guid>/post/2017-04-28-upgrade-to-r-3-4-0/</guid>
+      <description>
+
+&lt;h1 id=&#34;the-problem&#34;&gt;The problem&lt;/h1&gt;
+
+&lt;p&gt;A new version of &lt;code&gt;R&lt;/code&gt; is out &amp;mdash; &lt;a href=&#34;https://cran.r-project.org/doc/manuals/r-release/NEWS.html&#34; target=&#34;_blank&#34;&gt;&amp;ldquo;You Stupid Darkness!&amp;rdquo;&lt;/a&gt;.
+If you feel a mixture of dread and excitement about upgrading &lt;code&gt;R&lt;/code&gt; you
+came to the right place. Upgrading &lt;code&gt;R&lt;/code&gt; can be exciting, usually because of new features!
+In this latest version, I am particularly excited about this one:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;The JIT (‘Just In Time’) byte-code compiler is now enabled by default at its level 3. This means functions will be compiled on first or second use and top-level loops will be compiled and then run. (Thanks to Tomas Kalibera for extensive work to make this possible.)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;And, it did not disappoint. &lt;code&gt;R&lt;/code&gt; definitely feels snappier!&lt;/p&gt;
+
+&lt;p&gt;However, upgrading &lt;code&gt;R&lt;/code&gt; can be a pain! Mostly because you may find yourself without any of
+your beloved packages installed! If you are like me, however, you may already have
+your packages installed in a central location outside the &lt;code&gt;R&lt;/code&gt; install folders. The
+problem then becomes, how do I update/upgrade all my packages to make sure they
+work nicely with the new version of &lt;code&gt;R&lt;/code&gt;.&lt;/p&gt;
+
+&lt;h1 id=&#34;some-initial-setup&#34;&gt;Some initial setup&lt;/h1&gt;
+
+&lt;p&gt;By default, when you install a library, &lt;code&gt;R&lt;/code&gt; will install it on the top entry in
+your &lt;code&gt;libPaths&lt;/code&gt;, a character vector holding the absolute paths to folders in your
+system where libraries are stored. When you ask to load a library, &lt;code&gt;R&lt;/code&gt; will search
+within these folders.&lt;/p&gt;
+
+&lt;p&gt;You can see a list of these folders by typing the following in the &lt;code&gt;R&lt;/code&gt; console:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;.libPaths()
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;On a Mac, by default, this will return two paths (Linux will give you something
+similar):&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;&amp;quot;$HOME/Library/R/&amp;lt;R_version&amp;gt;/library&amp;quot;
+&amp;quot;/Library/Frameworks/R.framework/Versions/&amp;lt;R_version&amp;gt;/Resources/library&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;As you can see, the paths depend on the &lt;code&gt;R&lt;/code&gt; version! So, these paths will change
+every time you upgrade &lt;code&gt;R&lt;/code&gt;.&lt;/p&gt;
+
+&lt;div class=&#34;alert alert-note&#34;&gt;
+  &lt;p&gt;&lt;strong&gt;Our goal is to make sure that the first path on that list is something that
+does not change with every update of &lt;code&gt;R&lt;/code&gt;!&lt;/strong&gt;&lt;/p&gt;
+
+&lt;/div&gt;
+
+
+&lt;p&gt;Let us start with the case where you don&amp;rsquo;t have your packages yet centrally
+filed into a folder outside of the &lt;code&gt;R&lt;/code&gt; install folder. In my case, I have a
+folder called &lt;code&gt;~/Rlibs&lt;/code&gt; where I keep my packages. But it can be called anything
+you like. The trick is, once you have created the folder, to make sure it becomes
+your default library install folder. To do that, copy paste the following commands
+in to the &lt;code&gt;Terminal&lt;/code&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;mkdir ~/Rlibs
+touch ~/.Renviron
+echo &amp;quot;R_LIBS=~/Rlibs&amp;quot; &amp;gt; ~/.Renviron
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The &lt;code&gt;.Renviron&lt;/code&gt; file is read by &lt;code&gt;R&lt;/code&gt; every time you start &lt;code&gt;R&lt;/code&gt;. It reads environmental
+variables, in this case &lt;code&gt;R_LIBS&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Now, when you call &lt;code&gt;.libPaths()&lt;/code&gt; in the &lt;code&gt;R&lt;/code&gt; console, you should see the following:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;&amp;quot;$HOME/Rlibs&amp;quot;
+&amp;quot;$HOME/Library/R/&amp;lt;R_version&amp;gt;/library&amp;quot;
+&amp;quot;/Library/Frameworks/R.framework/Versions/&amp;lt;R_version&amp;gt;/Resources/library&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h1 id=&#34;preparing-for-the-upgrade&#34;&gt;Preparing for the upgrade&lt;/h1&gt;
+
+&lt;h2 id=&#34;if-you-just-setup-your-rlibs-folder&#34;&gt;If you just setup your &lt;code&gt;Rlibs&lt;/code&gt; folder&lt;/h2&gt;
+
+&lt;p&gt;If you just created your &lt;code&gt;Rlibs&lt;/code&gt; folder, it will be empty. So, before you upgrade,
+you should create a list of packages that are currently installed so you can
+install them again, now in your newly minted &lt;code&gt;Rlibs&lt;/code&gt; folder, once the upgrade
+is complete.&lt;/p&gt;
+
+&lt;p&gt;In the &lt;code&gt;R&lt;/code&gt; console, type the following:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;library(magrittr)
+library(readr)
+installed.packages() %&amp;gt;% 
+  as.data.frame() %&amp;gt;% 
+  readr::write_csv(&amp;quot;/tmp/installed_packages.csv&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;What this will do is create a file called &lt;code&gt;/tmp/installed_packages.csv&lt;/code&gt;. You can
+put it someplace else, if you would like to keep for a posterity. I would just
+dump it into &lt;code&gt;/tmp&lt;/code&gt; because I don&amp;rsquo;t want to keep for too long. You may also
+dump it in &lt;code&gt;$HOME/.Trash&lt;/code&gt; if you are on a Mac.&lt;/p&gt;
+
+&lt;p&gt;Just to make sure it all worked well, you might want to run the following:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;readr::read_csv(&amp;quot;/tmp/installed_packages.csv&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;If it worked, you will get a &lt;code&gt;data.frame&lt;/code&gt; with the same results from
+&lt;code&gt;installed.packages()&lt;/code&gt;.&lt;/p&gt;
+
+&lt;h2 id=&#34;steps-before-upgrading&#34;&gt;Steps before upgrading&lt;/h2&gt;
+
+&lt;ol&gt;
+&lt;li&gt;If you use &lt;code&gt;RStudio&lt;/code&gt;, check that you are running the latest version: &lt;code&gt;Help -&amp;gt; Check for updates&lt;/code&gt;.
+Install any updates if necessary.&lt;/li&gt;
+&lt;li&gt;Download the latest &lt;code&gt;R&lt;/code&gt; installer for your OS: &lt;a href=&#34;https://cloud.r-project.org/&#34; target=&#34;_blank&#34;&gt;CRAN&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;One final step is probably necessary to avoid immediate crashes after you upgrade. Run the following in &lt;code&gt;Terminal&lt;/code&gt;:&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;if [ -f $HOME/.RData ]; then mv $HOME/.RData $HOME/.RData.bk; fi
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;div class=&#34;alert alert-warning&#34;&gt;
+  &lt;p&gt;&lt;code&gt;$HOME/.RData&lt;/code&gt; can be a source of immediate crashes after an update.&lt;/p&gt;
+
+&lt;/div&gt;
+
+
+&lt;p&gt;&lt;code&gt;$HOME/.RData&lt;/code&gt; when it boots holds any information on
+any sessions you may have run with your &lt;code&gt;$HOME&lt;/code&gt; as your working directory. When
+starting up &lt;code&gt;R&lt;/code&gt;, it will usually try to load this file. If you are
+like me, these sessions are often just used to test something out quickly, or some
+through away code I am trying out from the internet. Now, if that session has any
+libraries that have &lt;code&gt;C/C++&lt;/code&gt; code compiled with a previous version of &lt;code&gt;R&lt;/code&gt;, &lt;code&gt;R&lt;/code&gt;
+will likely &lt;code&gt;segfault&lt;/code&gt; and quit.&lt;/p&gt;
+
+&lt;div class=&#34;alert alert-info&#34;&gt;
+  &lt;p&gt;This issue is easier to diagnose if you run the
+native &lt;code&gt;R&lt;/code&gt; app rather than &lt;code&gt;RStudio&lt;/code&gt;. In &lt;code&gt;RStudio&lt;/code&gt; you usually only get an unhelpful
+message saying that &lt;code&gt;R&lt;/code&gt; has quit.&lt;/p&gt;
+
+&lt;/div&gt;
+
+
+&lt;p&gt;This is really only a problem because we are trying to be smart, and carry-over
+our previous installation of libraries to the new &lt;code&gt;R&lt;/code&gt; installation via our
+static &lt;code&gt;R&lt;/code&gt; library folder. If that did not exist, &lt;code&gt;R&lt;/code&gt; would simply fail to load
+the library, and issue you with an error saying it could not find the library.
+You would then re-install it, and thus you would have avoided this issue altogether.&lt;/p&gt;
+
+&lt;h1 id=&#34;after-you-upgrade&#34;&gt;After you upgrade&lt;/h1&gt;
+
+&lt;p&gt;So, you have installed the latest version of &lt;code&gt;RStudio&lt;/code&gt; and &lt;code&gt;R&lt;/code&gt;. If all went
+well so far, you should see something like this in your console when you boot
+up &lt;code&gt;RStudio&lt;/code&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;R version 3.4.0 (2017-04-21) -- &amp;quot;You Stupid Darkness&amp;quot;
+Copyright (C) 2017 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin15.6.0 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type &#39;license()&#39; or &#39;licence()&#39; for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type &#39;contributors()&#39; for more information and
+&#39;citation()&#39; on how to cite R or R packages in publications.
+
+Type &#39;demo()&#39; for some demos, &#39;help()&#39; for on-line help, or
+&#39;help.start()&#39; for an HTML browser interface to help.
+Type &#39;q()&#39; to quit R.
+
+[Workspace loaded from ~/.RData]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;before-we-start-installing-upgrading-packages&#34;&gt;Before we start installing/upgrading packages&lt;/h2&gt;
+
+&lt;h3 id=&#34;set-all-the-repositories-you-wish-to-search-for-libraries&#34;&gt;Set all the repositories you wish to search for libraries&lt;/h3&gt;
+
+&lt;p&gt;The great majority of my packages are available on &lt;code&gt;CRAN&lt;/code&gt;. But, a handful
+(for instance, the great &lt;a href=&#34;https://github.com/GuangchuangYu/ggtree&#34; target=&#34;_blank&#34;&gt;&lt;code&gt;ggtree&lt;/code&gt;&lt;/a&gt;),
+however, are in &lt;code&gt;Bioconductor&lt;/code&gt;. You may have other repositories you wish to
+have &lt;code&gt;R&lt;/code&gt; automatically search for libraries too.&lt;/p&gt;
+
+&lt;p&gt;However, by default, &lt;code&gt;R&lt;/code&gt; will only search in &lt;code&gt;CRAN&lt;/code&gt;. It does have other repositories
+listed under &lt;code&gt;$R_HOME/etc/repositories&lt;/code&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;## URL          is the base URL (see R-admin.texi)
+## default      is whether this should be a default choice
+## source, win.binary, mac.binary   indicate if the corresponding type is present
+##
+## BioC entries are version-specific, with %v getting expanded to the
+## BioC version associated with the current R version.
+## Also, %bm is substituted from the setting of getOption(&amp;quot;BioC_mirror&amp;quot;)
+##
+menu_name       URL     default source  win.binary      mac.binary
+CRAN    CRAN    @CRAN@  TRUE    TRUE    TRUE    TRUE
+BioCsoft        &amp;quot;BioC software&amp;quot; %bm/packages/%v/bioc    FALSE   TRUE    TRUE    TRUE
+BioCann &amp;quot;BioC annotation&amp;quot;       %bm/packages/%v/data/annotation FALSE   TRUE    TRUE    TRUE
+BioCexp &amp;quot;BioC experiment&amp;quot;       %bm/packages/%v/data/experiment FALSE   TRUE    TRUE    TRUE
+BioCextra       &amp;quot;BioC extra&amp;quot;    %bm/packages/%v/extra   FALSE   TRUE    TRUE    TRUE
+CRANextra       CRAN (extras)   https://www.stats.ox.ac.uk/pub/RWin     FALSE   TRUE    TRUE    TRUE
+Omegahat        Omegahat        http://www.omegahat.net/R       FALSE   TRUE    FALSE   FALSE
+R-Forge R-Forge https://R-Forge.R-project.org   FALSE   TRUE    TRUE    TRUE
+rforge.net      rforge.net      https://www.rforge.net  FALSE   TRUE    TRUE    TRUE
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Notice that &lt;code&gt;BioConductor&lt;/code&gt; is second on the list. So, to enable &lt;code&gt;R&lt;/code&gt; to automatically
+search &lt;code&gt;CRAN&lt;/code&gt; and &lt;code&gt;BioConductor&lt;/code&gt; the the following command into the &lt;code&gt;R&lt;/code&gt; console:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;setRepositories(ind = c(1,2))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;I suggest you check the &lt;code&gt;setRepositories&lt;/code&gt; documentation if you want to know more.
+But, essentially, the &lt;code&gt;ind&lt;/code&gt; parameter indicates the indices of the rows of the
+&lt;code&gt;$R_HOME/etc/reporsitories&lt;/code&gt; file that contain the repositories you wish to
+automatically search for libraries. The documentation describes how you can
+provide your own list of repositories.&lt;/p&gt;
+
+&lt;h3 id=&#34;check-that-your-rlibs-is-the-first-in-the-libpaths&#34;&gt;Check that your &lt;code&gt;RLibs&lt;/code&gt; is the first in the &lt;code&gt;libPaths&lt;/code&gt;&lt;/h3&gt;
+
+&lt;p&gt;Just issue the command &lt;code&gt;libPaths()&lt;/code&gt; on the &lt;code&gt;R&lt;/code&gt; console. If your &lt;code&gt;$HOME/Rlibs&lt;/code&gt;
+is not the first on the list, go back up to top of this post, and read about
+setting the &lt;code&gt;R_LIBS&lt;/code&gt; environmental variable.&lt;/p&gt;
+
+&lt;h2 id=&#34;if-you-just-setup-your-rlibs-folder-1&#34;&gt;If you just setup your &lt;code&gt;RLibs&lt;/code&gt; folder&lt;/h2&gt;
+
+&lt;p&gt;We will use that file we saved above to generate a list of packages. Take the
+following steps:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;Read in the table:&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;package_table &amp;lt;- read.csv(&amp;quot;/tmp/installed_packages.csv&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;div class=&#34;alert alert-note&#34;&gt;
+  &lt;p&gt;Note that here I used the &lt;code&gt;utils::read.csv&lt;/code&gt; function and not the &lt;code&gt;readr::read_csv&lt;/code&gt;
+function. The reason is at this point you should not have an
+installed copy of &lt;code&gt;readr&lt;/code&gt;&lt;/p&gt;
+
+&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;Pull out the list of package names (the first column of &lt;code&gt;package_table&lt;/code&gt;):&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;package_names &amp;lt;- package_table[,1]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;ol&gt;
+&lt;li&gt;Install packages automatically:&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;install.packages(package_names)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;That is it! Sit back, and watch as &lt;code&gt;R&lt;/code&gt; does all the work for you.&lt;/p&gt;
+
+&lt;h2 id=&#34;if-you-previously-had-an-rlibs-type-folder&#34;&gt;If you previously had an &lt;code&gt;RLibs&lt;/code&gt;-type folder&lt;/h2&gt;
+
+&lt;p&gt;You are in easy territory then. You need to issue
+the following command:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;update.packages(ask = F, checkBuilt = T)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The &lt;code&gt;ask= F&lt;/code&gt; option will refrain from asking you questions. The &lt;code&gt;checkBuilt = T&lt;/code&gt;
+option is &lt;strong&gt;very important&lt;/strong&gt;. It is possible that you have the latest version of
+a package but it was built with a previous version of &lt;code&gt;R&lt;/code&gt;. In those case, you
+want to make sure the package get updated to one that is built with your
+current version of &lt;code&gt;R&lt;/code&gt;.&lt;/p&gt;
+
+&lt;div class=&#34;alert alert-note&#34;&gt;
+  &lt;p&gt;Here, you might want to go get a coffee and/or watch an episode of your
+favourite show and/or read some blog posts online. Depending on how many
+packages you have installed, it could take a non-trivial amount of time to &lt;br /&gt;
+finish up.&lt;/p&gt;
+
+&lt;/div&gt;
+
+
+&lt;h2 id=&#34;one-last-step&#34;&gt;One last step&amp;hellip;&lt;/h2&gt;
+
+&lt;p&gt;Hopefully, it all went well, and everything has installed/updated, and you
+are almost ready to go. Just one last thing. If you moved your &lt;code&gt;$HOME/.RData&lt;/code&gt; to
+&lt;code&gt;$HOME/.RData.bk&lt;/code&gt;. Then shutdown &lt;code&gt;R&lt;/code&gt;, and type the following into the &lt;code&gt;Terminal&lt;/code&gt;
+to get it back:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;mv $HOME/.RData.bk $HOME/.RData
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Now, when you boot up &lt;code&gt;R&lt;/code&gt; from &lt;code&gt;$HOME&lt;/code&gt; you should have your session back, and
+hopefully no &lt;code&gt;segfaults&lt;/code&gt;!&lt;/p&gt;
+
+&lt;h1 id=&#34;the-end&#34;&gt;The end&lt;/h1&gt;
+
+&lt;p&gt;That is it! Congratulations!! You have just upgraded to the latest version of &lt;code&gt;R&lt;/code&gt;
+in a relatively painless way. Happy coding!&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>
