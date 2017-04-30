@@ -36,6 +36,18 @@ your packages installed in a central location outside the &lt;code&gt;R&lt;/code
 problem then becomes, how do I update/upgrade all my packages to make sure they
 work nicely with the new version of &lt;code&gt;R&lt;/code&gt;.&lt;/p&gt;
 
+&lt;div class=&#34;alert alert-success&#34;&gt;
+  &lt;p&gt;In this post I will cover:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;How to setup your own static &lt;code&gt;R&lt;/code&gt; library folder&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Update to latest &lt;code&gt;R&lt;/code&gt; version with all your packages intact&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;/div&gt;
+
+
 &lt;h1 id=&#34;some-initial-setup&#34;&gt;Some initial setup&lt;/h1&gt;
 
 &lt;p&gt;By default, when you install a library, &lt;code&gt;R&lt;/code&gt; will install it on the top entry in
@@ -320,8 +332,7 @@ in a relatively painless way. Happy coding!&lt;/p&gt;
       <pubDate>Tue, 19 Feb 2008 00:00:00 +0000</pubDate>
       
       <guid>/publication/mexican_fruit-eating_bats/</guid>
-      <description>&lt;p&gt;More detail can easily be written here using &lt;em&gt;Markdown&lt;/em&gt; and $\rm \LaTeX$ math code.&lt;/p&gt;
-</description>
+      <description></description>
     </item>
     
   </channel>
