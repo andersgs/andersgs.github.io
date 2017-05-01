@@ -11,6 +11,15 @@
     <atom:link href="/" rel="self" type="application/rss+xml" />
     
     <item>
+      <title>Teaching about using R, phylogenetics, and molecular clocks in epidemiology.</title>
+      <link>/talk/montreal_june2017/</link>
+      <pubDate>Mon, 19 Jun 2017 00:00:00 +0000</pubDate>
+      
+      <guid>/talk/montreal_june2017/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>R upgrading can be a smooth process</title>
       <link>/post/2017-04-28-upgrade-to-r-3-4-0/</link>
       <pubDate>Fri, 28 Apr 2017 12:00:00 +0000</pubDate>
@@ -324,6 +333,15 @@ hopefully no &lt;code&gt;segfaults&lt;/code&gt;!&lt;/p&gt;
 &lt;p&gt;That is it! Congratulations!! You have just upgraded to the latest version of &lt;code&gt;R&lt;/code&gt;
 in a relatively painless way. Happy coding!&lt;/p&gt;
 </description>
+    </item>
+    
+    <item>
+      <title>A phylogenomic framework for assessing the global emergence and evolution of clonal complex 398 methicillin-resistant Staphylococcus aureus</title>
+      <link>/publication/nz_cc398/</link>
+      <pubDate>Tue, 31 Jan 2017 00:00:00 +0000</pubDate>
+      
+      <guid>/publication/nz_cc398/</guid>
+      <description></description>
     </item>
     
     <item>
