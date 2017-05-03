@@ -42,7 +42,14 @@
   <title>Diet and Trophic Structure in a Community of Fruit-Eating Bats in Lacandon Forest, México | dsci&#39;nomics: data science with a side of genomics</title>
 
 </head>
-<body id="top" data-spy="scroll" data-target="#navbar-main" data-offset="71">
+<body id="top" data-spy="scroll" data-target="#navbar-main" data-offset="71" 
+  data-responsejs='{ 
+  "create": [
+    { "prop": "width"
+    , "prefix": "min-width- r src"
+    , "lazy": true
+    , "breakpoints": [1281,1025,961,641,481,320,0] }
+  ]}'>
 
 <nav class="navbar navbar-default navbar-fixed-top" id="navbar-main">
   <div class="container">
@@ -56,7 +63,10 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="/">dsci&#39;nomics: data science with a side of genomics</a>
+      <a class="navbar-brand" href="/" 
+        data-min-width-0="dsci&#39;nomics"
+        data-min-width-481="dsci&#39;nomics: data sci &#43; genomics"
+        data-min-width-641="dsci&#39;nomics: data science with a side of genomics">dsci&#39;nomics: data science with a side of genomics</a>
     </div>
 
     
@@ -327,6 +337,8 @@
     <script src="/js/isotope.pkgd.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.1/imagesloaded.pkgd.min.js"></script>
     <script src="/js/hugo-academic.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/zepto/1.2.0/zepto.min.js" charset="utf-8"></script>
+    <script src="http://airve.github.com/js/response/response.min.js" charset="utf-8"></script>
     
 
     
