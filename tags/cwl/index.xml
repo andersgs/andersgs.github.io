@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Cwl on dsci&#39;nomics: data science with a side of genomics</title>
+    <link>/tags/cwl/</link>
+    <description>Recent content in Cwl on dsci&#39;nomics: data science with a side of genomics</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>&amp;copy; 2017 Anders Gonçalves da Silva</copyright>
+    <lastBuildDate>Sun, 07 May 2017 12:00:00 +0000</lastBuildDate>
+    <atom:link href="/tags/cwl/" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>A first taste of the common workflow language, part 1.</title>
+      <link>/post/2017-05-07-taste-of-cwl-part1/</link>
+      <pubDate>Sun, 07 May 2017 12:00:00 +0000</pubDate>
+      
+      <guid>/post/2017-05-07-taste-of-cwl-part1/</guid>
+      <description>
+
+&lt;h1 id=&#34;some-motivation&#34;&gt;Some motivation&amp;hellip;&lt;/h1&gt;
+
+&lt;p&gt;In a few days, I&amp;rsquo;ll be attending a workshop on the
+&lt;a href=&#34;(http://www.commonwl.org/)&#34; target=&#34;_blank&#34;&gt;Common Workflow Language&lt;/a&gt;, organised by the
+great folks at &lt;a href=&#34;http://www.melbournebioinformatics.org.au&#34; target=&#34;_blank&#34;&gt;Melbourne Bioinformatics&lt;/a&gt;,
+and to be run by one of CWL&amp;rsquo;s principal developers, Michael Crusoe
+(&lt;a href=&#34;https://twitter.com/biocrusoe&#34; target=&#34;_blank&#34;&gt;@biocrusoe&lt;/a&gt;). In preparation for the workshop
+I thought I would write a series of three posts to outline a bit of my
+experience with CWL, and get all my questions for Michael ready!&lt;/p&gt;
+
+&lt;h1 id=&#34;outline&#34;&gt;Outline&lt;/h1&gt;
+
+&lt;p&gt;In this first post, I&amp;rsquo;ll give a quick outline of why I got excited about
+CWL, and introduce the &lt;code&gt;Command Line Tool Description&lt;/code&gt;, the one of two
+documents you can write with CWL. In the second post, I&amp;rsquo;ll go over the
+&lt;code&gt;Workflow Description&lt;/code&gt; document, and then in the third post, I&amp;rsquo;ll
+wrap up by giving a quick overview of the tools available to run
+CWL flows, and finish with my list of what I really like
+about CWL and what I think was not quite as intuitive as I had hoped.&lt;/p&gt;
+
+&lt;h1 id=&#34;getting-excited-about-cwl&#34;&gt;Getting excited about CWL&lt;/h1&gt;
+
+&lt;p&gt;If you go to the CWL webpage you are greeted, right at the top, by these two
+sentences:&lt;/p&gt;
+
+&lt;div class=&#34;alert alert-success&#34;&gt;
+  &lt;p&gt;The Common Workflow Language (CWL) is a specification for describing analysis workflows and tools in a way that makes them portable and scalable across a variety of software and hardware environments, from workstations to cluster, cloud, and high performance computing (HPC) environments. CWL is designed to meet the needs of data-intensive science, such as Bioinformatics, Medical Imaging, Astronomy, Physics, and Chemistry.&lt;/p&gt;
+
+&lt;/div&gt;
+
+
+&lt;p&gt;When I first read that a couple of months ago, I found it hard not to get
+very excited with these promises. The idea of
+writing a single workflow that can be easily scaled up from a single
+machine to the cloud, and beyond, is very appealing! &lt;code&gt;And, it supports Docker
+containers!&lt;/code&gt;. I then decided to try it out
+with a real problem that I had at the time: I needed to estimate limit of
+detection of &lt;em&gt;in silico&lt;/em&gt; MLST for NATA accreditation. At MDU, we use
+Torsten Seemann&amp;rsquo;s (&lt;a href=&#34;https://thegenomefactory.blogspot.com.au/&#34; target=&#34;_blank&#34;&gt;The Genome Factory&lt;/a&gt;)
+&lt;a href=&#34;https://github.com/tseemann/mlst&#34; target=&#34;_blank&#34;&gt;MLST&lt;/a&gt; program, which requires an assembly.
+My workflow would then consist of taking PE reads as input, sub-sampling
+them to a certain depth of coverage, assembling, running MLST, and collating
+the data into a single table to be easily imported into &lt;code&gt;R&lt;/code&gt;. Simple, right?
+Almost, there were a few hitches along the way, but I was still impressed
+with CWL.&lt;/p&gt;
+
+&lt;div class=&#34;alert alert-warning&#34;&gt;
+  &lt;p&gt;One important thing to remember: CWL is the spec! It is designed to be &lt;code&gt;vendor&lt;/code&gt;
+agnostic (a &lt;em&gt;lingua franca&lt;/em&gt; or trading language for workflows). So, it is
+important to distinguish between perceived CWL shortcomings, and
+shortcomings of any particular &lt;code&gt;vendor&lt;/code&gt; that advertises CWL-support.&lt;/p&gt;
+
+&lt;/div&gt;
+
+
+&lt;h1 id=&#34;the-cwl-basics&#34;&gt;The CWL basics&lt;/h1&gt;
+
+&lt;p&gt;Given my experience with &lt;code&gt;make&lt;/code&gt; I made the mistake of making comparisons with it,
+and had the wrong expectations.&lt;/p&gt;
+
+&lt;div class=&#34;alert alert-info&#34;&gt;
+  &lt;p&gt;My advise is, if you have used &lt;code&gt;make&lt;/code&gt;, keep an open mind while delving into CWL.
+While there are some similarities, implementation differs.&lt;/p&gt;
+
+&lt;/div&gt;
+
+
+&lt;p&gt;The general idea of CWL is that you write your workflow as a YAML or JSON
+file. These files can then be read and executed by any number of
+different software (called &lt;code&gt;vendors&lt;/code&gt;). That is what makes CWL portable.
+It provides a set of rules of how to write these YAML files that
+can be expected to be respected by any piece of software that claims to
+support CWL.&lt;/p&gt;
+
+&lt;p&gt;There are two kind of documents you can write: &lt;code&gt;Command Line Tool
+Description&lt;/code&gt;, and a &lt;code&gt;Workflow Description&lt;/code&gt;. The &lt;code&gt;Command Line Tool 
+Description&lt;/code&gt;, as the name implies, describes how to build
+command lines, which are the building blocks of for the &lt;code&gt;Workflow
+Description&lt;/code&gt; documents. In this post, we will look
+over &lt;code&gt;Command Line Tool Description&lt;/code&gt;.&lt;/p&gt;
+
+&lt;h2 id=&#34;an-example-command-line-tool-description&#34;&gt;An example Command Line Tool Description&lt;/h2&gt;
+
+&lt;p&gt;The first step of my limit of detection pipeline was to sub-sample reads
+from a pair of FASTQ files. In this post, and the next, I will show you
+how I did this in &lt;code&gt;CWL&lt;/code&gt; using Heng Li&amp;rsquo;s &lt;code&gt;seqtk&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;The &lt;code&gt;Command Line Tool Description&lt;/code&gt; is a YAML document that describes how
+to build a command line string to run a certain command, and what to do
+with the output of the command. To get started, let us have a look a the
+description for &lt;code&gt;seqtk sample&lt;/code&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;Usage:   seqtk sample [-2] [-s seed=11] &amp;lt;in.fa&amp;gt; &amp;lt;frac&amp;gt;|&amp;lt;number&amp;gt;
+
+Options: -s INT       RNG seed [11]
+         -2           2-pass mode: twice as slow but with much reduced memory
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;By this description, &lt;code&gt;seqtk sample&lt;/code&gt; needs an input sequence file (that while
+is implied to be FASTA, it will also accept FASTQ); a fraction or number of
+reads to keep (in my case, I used number of reads); and it can optionally
+take a &lt;code&gt;seed&lt;/code&gt; to set the random number generator, and a flag to indicate
+whether to use a &lt;code&gt;2-pass mode&lt;/code&gt; or not. I chose not to use the &lt;code&gt;2-pass mode&lt;/code&gt;,
+so will ignore that option below. However, the &lt;code&gt;seed&lt;/code&gt; option was essential
+to work with PE reads. By giving the pair of sequences the same seed, I
+can guarantee that the same sequenced fragments will be selected from the
+two files. What is not explicit in the description is that the output is
+streamed to &lt;code&gt;stdout&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;So, I am looking to build the equivalent of:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;seqtk sample -s 6773 seq_R1.fq 1000 &amp;gt; seq_10000_R1.fq
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Here is how we achieve it using the CLI tool description in CWL (below
+I go over each line in detail):&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;cwlVersion: v1.0
+class: CommandLineTool
+doc: &amp;gt;
+  A command line tool to use seqtk sample to sub-sample N reads from a single
+  FASTQ file. The use of the seed ensures that pairs of reads have the same
+  records sampled, and ensure reproducibility of the pipeline by others.
+baseCommand: [&#39;seqtk&#39;, &#39;sample&#39;]
+inputs:
+    seed:
+        type: int
+        inputBinding:
+            prefix: -s
+            position: 1
+        doc: The seed needed to ensure the same records are kept across PE files
+    fastq:
+        type: File
+        inputBinding:
+            position: 2
+        doc: A single FASTQ input file
+    number:
+        type: int
+        inputBinding:
+            position: 3
+        doc: An integer specifying how many records to keep
+    seqid: 
+        type: string
+        doc: &amp;gt;
+          A string to be used in the output name (notice no inputBinding) to 
+          indicate the ID of the sample.
+    read_number: 
+        type: int
+        doc: &amp;gt;
+          An int to be used in the output name (notice no inputBinding) that 
+          indicates if it is READ1 or READ2 in a pair
+    rep: 
+        type: int
+        doc: &amp;gt;
+          An int to be used in the output name (notice no inputBinding) to 
+          indicate the replicate sub-sample number
+outputs:
+    seqtkout:
+        type: stdout
+stdout: $(inputs.seqid)___$(inputs.number)-$(inputs.seed)-$(inputs.rep)___R$(inputs.read_number).fq
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The first two lines are self-evident. You must specify the version of the
+CWL specification that you are using, and that this document specifies a
+&lt;code&gt;Command Line Tool&lt;/code&gt;. The &lt;code&gt;baseCommand&lt;/code&gt; specifies the executable that
+should be called, in this case I gave it an array with the main executable
+(&lt;code&gt;seqtk&lt;/code&gt;), and the sub-command (&lt;code&gt;sample&lt;/code&gt;). But, a single string with a
+command can be used when appropriate (e.g., &lt;code&gt;baseCommand: mlst&lt;/code&gt;).&lt;/p&gt;
+
+&lt;p&gt;The &lt;code&gt;doc&lt;/code&gt; strings can be used throughout the document to describe what you are
+doing and why! I really like this feature, but I suspect it will seldom be
+actually used, which is a pity.&lt;/p&gt;
+
+&lt;p&gt;Next I have listed the inputs to the tool under &lt;code&gt;inputs&lt;/code&gt;.
+In &lt;code&gt;inputs&lt;/code&gt;, you can list each input the command-line tool requires, and under
+each input, you need to specify the &lt;code&gt;type&lt;/code&gt;, in this case there are two
+examples &lt;code&gt;File&lt;/code&gt; and &lt;code&gt;int&lt;/code&gt;. Other types include &lt;code&gt;string&lt;/code&gt;, &lt;code&gt;array&lt;/code&gt;,
+&lt;code&gt;Directory&lt;/code&gt;, or custom types, which I&amp;rsquo;ll demonstrate in the next post.&lt;/p&gt;
+
+&lt;p&gt;For those inputs that will be used to form the command string that will
+be run, you must specify the &lt;code&gt;inputBindings&lt;/code&gt;. These describe any
+&lt;code&gt;prefixes&lt;/code&gt; the option should have while building the command string,
+the position of each option, if there should be a space between the &lt;code&gt;prefix&lt;/code&gt;
+and the &lt;code&gt;value&lt;/code&gt;, etc.&lt;/p&gt;
+
+&lt;p&gt;The &lt;code&gt;outputs&lt;/code&gt; section works in a similar way. The name of a particular input
+here could be used as an &lt;code&gt;input&lt;/code&gt; in another tool downstream. This helps setup
+&lt;code&gt;make&lt;/code&gt;-like dependencies among tools in a pipeline. One cool thing about &lt;code&gt;CWL&lt;/code&gt;
+is that it is able to capture &lt;code&gt;stdout&lt;/code&gt; of a tool, and push it to a file.&lt;/p&gt;
+
+&lt;p&gt;If capturing the tools &lt;code&gt;stdout&lt;/code&gt;, you need to specify a filename
+under the &lt;code&gt;stdout&lt;/code&gt; key. This could be a simple string (e.g., &lt;code&gt;myout.txt&lt;/code&gt;),
+or it can be an expression, as I have used here. In this case, I used the
+&lt;code&gt;$()&lt;/code&gt; notation to access elements of the &lt;code&gt;inputs&lt;/code&gt; object. The &lt;code&gt;$()&lt;/code&gt; gives you
+access to a limited set of JavaScript notation to access different objects.
+You can use it to access data in &lt;code&gt;inputs&lt;/code&gt;, &lt;code&gt;self&lt;/code&gt;, and &lt;code&gt;runtime&lt;/code&gt; objects.
+In this case, I use it to create a filename that has the following pattern:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;mySeqId___1000-899666-3___R1.fq
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The values for each parameter are listed under the &lt;code&gt;inputs&lt;/code&gt; section!&lt;/p&gt;
+
+&lt;div class=&#34;alert alert-info&#34;&gt;
+  &lt;p&gt;CWL lets you use a &lt;code&gt;$()&lt;/code&gt; to access parameter values within different
+objects. Check out the
+&lt;a href=&#34;http://www.commonwl.org/v1.0/Workflow.html&#34; target=&#34;_blank&#34;&gt;documentation&lt;/a&gt; for description
+of the objects you can access automatically.&lt;/p&gt;
+
+&lt;/div&gt;
+
+
+&lt;h1 id=&#34;that-is-it-for-now&#34;&gt;That is it for now&amp;hellip;&lt;/h1&gt;
+
+&lt;p&gt;That is all you really need to know to get started writing your own
+&lt;code&gt;Command Line Tool Descriptions&lt;/code&gt;. It is fairly simple, and I fount it to be
+highly readable. If you want some more examples, check out the
+&lt;a href=&#34;http://www.commonwl.org/v1.0/UserGuide.html#Wrapping_Command_Line_Tools&#34; target=&#34;_blank&#34;&gt;Wrapping Command Line Tools&lt;/a&gt;
+section of the Gentle Introduction to CWL.&lt;/p&gt;
+
+&lt;p&gt;As I said before, in part 2 of this post I&amp;rsquo;ll go over the basic
+of writing a &lt;code&gt;Workflow Description&lt;/code&gt; to produce untold number of
+sub-sampled reads that use the above CLI description as a building
+block.&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>
