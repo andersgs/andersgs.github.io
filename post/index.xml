@@ -11,6 +11,453 @@
     <atom:link href="/post/" rel="self" type="application/rss+xml" />
     
     <item>
+      <title>A first taste of the common workflow language, part 2.</title>
+      <link>/post/2017-05-10-taste-of-cwl-part2/</link>
+      <pubDate>Wed, 10 May 2017 12:00:00 +0000</pubDate>
+      
+      <guid>/post/2017-05-10-taste-of-cwl-part2/</guid>
+      <description>
+
+&lt;h1 id=&#34;welcome-back-to-part-2-of-my-cwl-series&#34;&gt;Welcome back to part 2 of my CWL series&lt;/h1&gt;
+
+&lt;p&gt;In my previous &lt;a href=&#34;/post/2017-05-07-taste-of-cwl-part1/&#34; target=&#34;_blank&#34;&gt;post&lt;/a&gt;, I talked about some of things that got me excited about CWL, and
+I introduced the &lt;code&gt;Command Line Tool Description&lt;/code&gt;. Here, I will introduce the &lt;code&gt;Workflow Description&lt;/code&gt;,
+which uses the &lt;code&gt;Command Line Tool Description&lt;/code&gt; as a building block. I will do this by continuing with my
+limit of detection problem. I am focusing on the first step of that problem, which was producing
+sub-sampled reads using Heng Li&amp;rsquo;s &lt;code&gt;seqtk&lt;/code&gt;. In particular, this workflow
+will take an object that houses a pair of related FASTQ files,
+randomly sub-sample the files to several different total number of reads, with
+each total number of reads retained replicated several times.&lt;/p&gt;
+
+&lt;h1 id=&#34;an-example-workflow-description&#34;&gt;An example Workflow description&lt;/h1&gt;
+
+&lt;p&gt;As a quick recap, CWL provides specs for two kind of documents: &lt;code&gt;Command Line Tool Description&lt;/code&gt;,
+and the &lt;code&gt;Workflow Description&lt;/code&gt;. As suggested by the name, &lt;code&gt;Command Line Tool Description&lt;/code&gt; documents
+describe how to build a command line with some &lt;code&gt;inputs&lt;/code&gt;, and describes how to handle the &lt;code&gt;output&lt;/code&gt;.
+The &lt;code&gt;Workflow Description&lt;/code&gt; describes the steps which connect &lt;code&gt;Command Line Tool Descriptions&lt;/code&gt; in
+order to go from some raw &lt;code&gt;inputs&lt;/code&gt; to the final &lt;code&gt;outputs&lt;/code&gt; of interest.&lt;/p&gt;
+
+&lt;p&gt;The &lt;code&gt;Workflow Description&lt;/code&gt; follows a similar pattern to that of the &lt;code&gt;Command Line Tool Description&lt;/code&gt;,
+and is similarly readable, but in my example, it is perhaps a bit long. So, I&amp;rsquo;ll break it down into parts,
+and go over it step-by-step. I decided to go with this example in spite of
+its length because it is a real example of CWL in use. At the end, I&amp;rsquo;ll point towards the GitHub repo where you can get the whole code.&lt;/p&gt;
+
+&lt;h2 id=&#34;the-general-outline&#34;&gt;The general outline&lt;/h2&gt;
+
+&lt;p&gt;The &lt;code&gt;Workflow Description&lt;/code&gt; has three main sections: &lt;code&gt;header&lt;/code&gt; section, an &lt;code&gt;IO&lt;/code&gt; section, and a
+&lt;code&gt;steps&lt;/code&gt; section. I&amp;rsquo;ll go over each in turn.&lt;/p&gt;
+
+&lt;h2 id=&#34;the-header&#34;&gt;The header&lt;/h2&gt;
+
+&lt;p&gt;First, we start with the header information:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;cwlVersion: v1.0
+class: Workflow
+
+requirements:
+ - class: ScatterFeatureRequirement
+ - class: InlineJavascriptRequirement
+ - class: StepInputExpressionRequirement
+ - $import: readPair.yml
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The first two lines are self-explanatory. You have to specify the
+ version of the spec, and that this document refers to a Workflow.&lt;/p&gt;
+
+&lt;p&gt;The &lt;code&gt;requirements&lt;/code&gt; outline some additional information that is required
+ to run the Workflow. Three of the listed requirements are provided by
+ the spec: &lt;code&gt;ScatterFeatureRequirement&lt;/code&gt;, &lt;code&gt;InlineJavascriptRequirement&lt;/code&gt;, and
+ &lt;code&gt;StepInputExpressionRequirement&lt;/code&gt;. Their names already hint at what
+ functionality they enable, but I&amp;rsquo;ll address them individually when I
+ get to the appropriate portion of the description. This is only a subset
+ of the additional features you get out of the box. You can find the
+ description to others &lt;a href=&#34;http://www.commonwl.org/v1.0/Workflow.html#WorkflowStep&#34; target=&#34;_blank&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;The last item in the requirements section imports a &lt;code&gt;readPair.yml&lt;/code&gt; file.
+ Because my workflow works on pairs of FASTQ files, I needed to
+ create an object that kept the pairs of files together, and passed them
+ along through the workflow.&lt;/p&gt;
+
+&lt;div class=&#34;alert alert-info&#34;&gt;
+  &lt;p&gt;While I am specifying the &lt;code&gt;requirements&lt;/code&gt; at the start of my &lt;code&gt;Workflow Description&lt;/code&gt;,
+ they can be specified at each step individually, or within the individual
+ &lt;code&gt;Command Line Tool Descriptions&lt;/code&gt;. So, there is plenty of flexibility here.
+ I like to think of these as modules in &lt;code&gt;Python&lt;/code&gt;, or libraries in &lt;code&gt;R&lt;/code&gt;. They
+ add functionality!&lt;/p&gt;
+
+&lt;/div&gt;
+
+
+&lt;h2 id=&#34;my-custom-object-readpair-yml&#34;&gt;My custom object: &lt;code&gt;readPair.yml&lt;/code&gt;&lt;/h2&gt;
+
+&lt;p&gt;Before we continue, I will digress and show you the &lt;code&gt;readPair.yml&lt;/code&gt; file to
+ demonstrate the creation of a custom &lt;code&gt;type&lt;/code&gt; of input. The motivation to
+ create one was bourne out of the necessity of keeping PE FASTQ files together
+ while pushing them through the pipeline. It is an unfortunate standard, but
+ it is the standard at the moment:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;class: SchemaDefRequirement
+types:
+ - name: FilePair
+   type: record
+   fields:
+     - name: forward
+       type: File
+     - name: reverse
+       type: File
+     - name: seed
+       type: int[]
+     - name: number
+       type: int[]
+     - name: rep
+       type: int[]
+     - name: seqid
+       type: string
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The &lt;code&gt;class&lt;/code&gt; just tells CWL that what is coming next is the definition of
+a new &lt;code&gt;schema&lt;/code&gt; or &lt;code&gt;type&lt;/code&gt; of object. The &lt;code&gt;types&lt;/code&gt; field allows you to
+specify more then one new object per file. For each new type, you
+need to specify a &lt;code&gt;name&lt;/code&gt;, a &lt;code&gt;type&lt;/code&gt; (which is always &lt;code&gt;record&lt;/code&gt; for now,
+this may change in future versions of CWL),
+and then the &lt;code&gt;fields&lt;/code&gt; that are the individual components of the object.
+Each field has a &lt;code&gt;name&lt;/code&gt;, and
+&lt;code&gt;type&lt;/code&gt;, which are usually the base types (e.g., &lt;code&gt;int&lt;/code&gt;, &lt;code&gt;string&lt;/code&gt;, &lt;code&gt;array&lt;/code&gt;).&lt;/p&gt;
+
+&lt;p&gt;Note that I am using some syntactic sugar here to define &lt;code&gt;int&lt;/code&gt; arrays: &lt;code&gt;int[]&lt;/code&gt;.
+That notation can be used with any of the defined types. So, after defining
+a &lt;code&gt;FilePair&lt;/code&gt; type, I can use &lt;code&gt;FilePair[]&lt;/code&gt; to specify an array of &lt;code&gt;FilePair&lt;/code&gt;s.&lt;/p&gt;
+
+&lt;p&gt;In short, my &lt;code&gt;FilePair&lt;/code&gt; object has two &lt;code&gt;File&lt;/code&gt;s: &lt;code&gt;forward&lt;/code&gt; and &lt;code&gt;reverse&lt;/code&gt;; it has
+an array of &lt;code&gt;int&lt;/code&gt;s that set the seeds to be used with &lt;code&gt;seqtk sample&lt;/code&gt;; it has
+an array of &lt;code&gt;int&lt;/code&gt;s that have the &lt;code&gt;number&lt;/code&gt; of reads I want to save, an array
+of &lt;code&gt;int&lt;/code&gt;s for the &lt;code&gt;rep&lt;/code&gt;lication number, and a &lt;code&gt;string&lt;/code&gt; for the sequence ID.
+This object describes all the information needed to process a single pair of isolates. Each
+array is as long as the number of sub-samples I will produce for that pair. For example, if
+I wanted two replicates each of 10,000 and 50,000 reads (a total of four sets of sub-sampled reads), the
+relevant section of my input file would look like this:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;     seed: [42, 52, 62, 72]
+     number: [10000, 10000, 50000, 50000]
+     rep: [1, 2, 1, 2]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;So, one run of &lt;code&gt;seqtk sample&lt;/code&gt; would use &lt;code&gt;seed&lt;/code&gt; = 42; &lt;code&gt;number&lt;/code&gt; = 10000, and &lt;code&gt;rep&lt;/code&gt; = 1,
+and so forth. This arrangement is what makes it possible for me to take advantage
+of the &lt;code&gt;ScatterFeatureRequirement&lt;/code&gt; requirement named in the header, which I will
+discuss below.&lt;/p&gt;
+
+&lt;div class=&#34;alert alert-success&#34;&gt;
+  &lt;p&gt;Before we move on, I would just like to acknowledge that inspiration for
+my &lt;code&gt;readPair.yml&lt;/code&gt; came from &lt;a href=&#34;https://github.com/h3abionet/h3abionet16S&#34; target=&#34;_blank&#34;&gt;h3abionet16S analysis package&lt;/a&gt;.
+The project describes quite an extensive CWL flow to deal with 16S data, and
+it a good place to get some examples and inspiration. And, of course, a CWL flow
+for 16S data.&lt;/p&gt;
+
+&lt;/div&gt;
+
+
+&lt;h2 id=&#34;the-io-section&#34;&gt;The IO section&lt;/h2&gt;
+
+&lt;p&gt;The IO section is not formally called the IO section anywhere. I just
+called it that because it specifies the &lt;code&gt;inputs&lt;/code&gt; and &lt;code&gt;outputs&lt;/code&gt; of the
+overall workflow.&lt;/p&gt;
+
+&lt;p&gt;Below, is the IO section of my &lt;code&gt;seqtk sample PE&lt;/code&gt; workflow.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;inputs:
+    forward: File
+    reverse: File
+    seqid: string
+    seed: int[]
+    number: int[]
+    rep: int[]
+
+outputs:
+    resampled_fastq:
+        type: &amp;quot;readPair.yml#FilePair&amp;quot;
+        outputSource: collect_output/fastq_pair_out
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;As you can see, there are two parts. In the &lt;code&gt;inputs&lt;/code&gt; section,
+you specify all the inputs you will need to
+start your workflow, or that will be needed during the workflow but
+are not generated as part of one of the intermediary steps (e.g.,
+the path to a DB you might use for an intermediary BLAST). The
+elements of the &lt;code&gt;inputs&lt;/code&gt; have the same name of the
+elements in the in the &lt;code&gt;FilePair&lt;/code&gt; object created in the
+&lt;code&gt;readPair.yml&lt;/code&gt; file. That is how you connect information in your input
+file to the &lt;code&gt;Workflow&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;In the &lt;code&gt;outputs&lt;/code&gt; section, we specify what the &lt;code&gt;Workflow&lt;/code&gt; will
+output. In this case, there is a single output, named &lt;code&gt;resampled_fastq&lt;/code&gt;.
+It is of type &lt;code&gt;FilePair&lt;/code&gt;. Here, a special notation is used that
+identifies the particular schema we want from the &lt;code&gt;readPair.yml&lt;/code&gt; file
+by using the &lt;code&gt;#&lt;/code&gt;. A deeper explanation of this notation can be
+found in the &lt;a href=&#34;http://www.commonwl.org/v1.0/SchemaSalad.html&#34; target=&#34;_blank&#34;&gt;&lt;code&gt;Schema SALAD specification&lt;/code&gt;&lt;/a&gt;
+that underlies the whole object notation used in CWL.&lt;/p&gt;
+
+&lt;p&gt;Finally, we specify the &lt;code&gt;source&lt;/code&gt; of the output with a notation
+&lt;code&gt;step_name/step_output&lt;/code&gt;. This output will come from the &lt;code&gt;collect_output&lt;/code&gt;
+step, specifically, the &lt;code&gt;fastq_pair_out&lt;/code&gt; output from that step.&lt;/p&gt;
+
+&lt;h2 id=&#34;the-steps-section&#34;&gt;The steps section&lt;/h2&gt;
+
+&lt;p&gt;The &lt;code&gt;steps&lt;/code&gt; section outlines the steps that need to be taken to
+go from the &lt;code&gt;inputs&lt;/code&gt; to the &lt;code&gt;outputs&lt;/code&gt; specified in the IO section. In
+my &lt;code&gt;seqtk PE sample&lt;/code&gt; workflow, there are three steps: &lt;code&gt;subsample_1&lt;/code&gt;,
+&lt;code&gt;subsample_2&lt;/code&gt;, and &lt;code&gt;collect_output&lt;/code&gt;. Because &lt;code&gt;seqtk sample&lt;/code&gt; only
+takes one file at a time, we need to run &lt;code&gt;seqtk sample&lt;/code&gt; twice, one
+for each file in the pair, with the same &lt;code&gt;seed&lt;/code&gt;. The first two
+steps take care of sub-sampling the two files, the last step
+collects the pairs of files, and rebuilds a &lt;code&gt;FilePair&lt;/code&gt; object to
+return. The reason I want to return a &lt;code&gt;FilePair&lt;/code&gt; object from this workflow
+is that this workflow is a sub-workflow of my larger limit of detection
+workflow. The following step in that larger workflow is an assembly step,
+which takes as input PE FASTQ files. Returning a &lt;code&gt;FilePair&lt;/code&gt; object is therefore
+convenient for the next step.&lt;/p&gt;
+
+&lt;p&gt;Because steps 1 and 2 are essentially the same, I&amp;rsquo;ll present
+both below, but only go over the first step.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;steps:
+    subsample_1:
+        in:
+            fastq: forward
+            seed: seed
+            number: number
+            rep: rep
+            seqid: seqid
+            read_number:
+                valueFrom: ${return 1;}
+        scatter: [seed, number, rep]
+        scatterMethod: dotproduct
+        out: [seqtkout]
+        run: seqtk_sample.cwl
+    subsample_2:
+        in:
+            fastq: reverse
+            seed: seed
+            number: number
+            rep: rep
+            seqid: seqid
+            read_number:
+                valueFrom: ${return 2;}
+        scatter: [seed, number, rep]
+        scatterMethod: dotproduct
+        out: [seqtkout]
+        run: seqtk_sample.cwl
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;For each &lt;code&gt;step&lt;/code&gt;, some keywords are necessary: &lt;code&gt;in&lt;/code&gt;, &lt;code&gt;out&lt;/code&gt;, and &lt;code&gt;run&lt;/code&gt;.
+The &lt;code&gt;run&lt;/code&gt; key can take either the name of a file that
+contains a &lt;code&gt;Command Line Tool Description&lt;/code&gt;, the name of a file
+with another &lt;code&gt;Workflow Description&lt;/code&gt; (allowing you to nest workflows),
+or you could specify what to run within the document
+(i.e., I could just copy-paste the
+&lt;code&gt;Command Line Tool Description&lt;/code&gt; from the previous
+&lt;a href=&#34;/post/2017-05-07-taste-of-cwl-part1/&#34; target=&#34;_blank&#34;&gt;post&lt;/a&gt; directly
+here). This, however, is not desirable. By keeping the definitions
+separate, I am free to use it in other workflows. Below, I&amp;rsquo;ll give
+a cool example where I run some custom JavaScript, and explicitly
+provide the definition of what to run rather than naming a file.&lt;/p&gt;
+
+&lt;p&gt;The &lt;code&gt;in&lt;/code&gt; and &lt;code&gt;out&lt;/code&gt; sections define what goes in to the step, and
+what comes out. As might be expected in a workflow, there is a lot of IO that
+happens at different levels (e.g., at the step level, or at the workflow level,
+or at the command line tool level). Getting the plumbing right
+is crucial for your &lt;code&gt;Workflow&lt;/code&gt; to work properly.&lt;/p&gt;
+
+&lt;p&gt;In the &lt;code&gt;in&lt;/code&gt;, we use a series of &lt;code&gt;key&lt;/code&gt;:&lt;code&gt;value&lt;/code&gt; pairs. The &lt;code&gt;keys&lt;/code&gt; are the values
+expected by the tool being run in the current step. If you
+look back at the previous
+&lt;a href=&#34;/post/2017-05-07-taste-of-cwl-part1/&#34; target=&#34;_blank&#34;&gt;post&lt;/a&gt;
+you will notice that the inputs for &lt;code&gt;seqtk_sample.cwl&lt;/code&gt; are
+named &lt;code&gt;fastq&lt;/code&gt;, &lt;code&gt;seed&lt;/code&gt;, &lt;code&gt;rep&lt;/code&gt;, etc. Under &lt;code&gt;read_number&lt;/code&gt; I
+use the notation &lt;code&gt;${}&lt;/code&gt; to write a very small JavaScript script
+to return a default &lt;code&gt;int&lt;/code&gt; value of &lt;code&gt;1&lt;/code&gt;. In step 2, I use the same
+artifice to return a default &lt;code&gt;int&lt;/code&gt; value of &lt;code&gt;2&lt;/code&gt;. These make the &lt;code&gt;R1&lt;/code&gt; and
+&lt;code&gt;R2&lt;/code&gt; bit of the sub-sampled PE filenames. I can use the notation &lt;code&gt;${}&lt;/code&gt; to
+embedded JavaScript into my workflow because I added
+the requirement &lt;code&gt;InlineJavascriptRequirement&lt;/code&gt; to the header
+section.&lt;/p&gt;
+
+&lt;div class=&#34;alert alert-info&#34;&gt;
+  &lt;p&gt;By including the &lt;code&gt;InlineJavascriptRequirement&lt;/code&gt; it is possible
+to write JavaScript scripts using the &lt;code&gt;${}&lt;/code&gt; notation.&lt;/p&gt;
+
+&lt;/div&gt;
+
+
+&lt;p&gt;The ability to take an input by using the keyword &lt;code&gt;valueFrom&lt;/code&gt; is
+possible because I included the &lt;code&gt;StepInputExpressionRequirement&lt;/code&gt; in
+the header section.&lt;/p&gt;
+
+&lt;div class=&#34;alert alert-info&#34;&gt;
+  &lt;p&gt;The &lt;code&gt;StepInputExpressionRequirement&lt;/code&gt; allows one to use the keyword
+&lt;code&gt;valueFrom&lt;/code&gt; to set default values or use JavaScript expressions to
+change inputs depending on other runtime variables.&lt;/p&gt;
+
+&lt;/div&gt;
+
+
+&lt;p&gt;The &lt;code&gt;values&lt;/code&gt; associated with each &lt;code&gt;key&lt;/code&gt; either reference
+the &lt;code&gt;inputs&lt;/code&gt; to the workflow directly
+(those defined in the IO section), or outputs from other steps.
+When referencing outputs from other steps, we use the same notation
+used in the overall &lt;code&gt;outputs&lt;/code&gt; section of &lt;code&gt;step_name/step_output&lt;/code&gt;.
+An example of this is in the third and final step of this &lt;code&gt;Workflow&lt;/code&gt;.
+When using outputs from other steps as inputs, this creates a
+dependency between the steps, and dictates in what order
+steps can be carried-out. If you have worked with &lt;code&gt;make&lt;/code&gt;, this will sound
+familiar.&lt;/p&gt;
+
+&lt;p&gt;The first two steps also include the following lines:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;        scatter: [seed, number, rep]
+        scatterMethod: dotproduct
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The &lt;code&gt;scatter&lt;/code&gt; allows one to break up the input in to a number of
+smaller jobs. In this case, I am specifying that
+&lt;code&gt;seed&lt;/code&gt;, &lt;code&gt;number&lt;/code&gt;, and &lt;code&gt;rep&lt;/code&gt; need to be combined to form individual
+jobs. The &lt;code&gt;scatterMethod&lt;/code&gt; specifies how we combine them.
+In particular, the &lt;code&gt;dotproduct&lt;/code&gt; method means that the first element of
+each of those arrays are joined to make a job, then the second
+element of each array are joined to make another job, and so on.
+It is a prerequisite, therefore, that the arrays all be of the
+same length. Other methods include &lt;code&gt;nested_crossproduct&lt;/code&gt; and
+&lt;code&gt;flat_crossproduct&lt;/code&gt; - read more about
+them &lt;a href=&#34;http://www.commonwl.org/v1.0/Workflow.html#WorkflowStep&#34; target=&#34;_blank&#34;&gt;here&lt;/a&gt;.
+This is possible because I added the &lt;code&gt;ScatterFeatureRequirement&lt;/code&gt; in
+the header section.&lt;/p&gt;
+
+&lt;div class=&#34;alert alert-info&#34;&gt;
+  &lt;p&gt;The &lt;code&gt;ScatterFeatureRequirement&lt;/code&gt; gives you the ability to apply or map
+a command over input arrays.&lt;/p&gt;
+
+&lt;/div&gt;
+
+
+&lt;p&gt;The third step (&lt;code&gt;collect_output&lt;/code&gt;), provides two additional examples of
+what is possible in CWL: (1) you can write the code for a step
+directly into the &lt;code&gt;Workflow Description&lt;/code&gt;; (2) there is a third class of
+object called &lt;code&gt;ExpressionTool&lt;/code&gt; that allows one to use JavaScript to
+accomplish what is needed. This gives CWL great flexibility to
+build some complex workflows!&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;    collect_output:
+        run:
+            class: ExpressionTool
+            inputs:
+                seq_1:
+                    type:
+                        type: array
+                        items: File
+                seq_2:
+                    type:
+                        type: array
+                        items: File
+                seqid: string
+            outputs:
+                fastq_pair_out: &amp;quot;readPair.yml#FilePair&amp;quot;
+            expression: &amp;gt;
+                ${
+                    var ret=[];
+                    for (var i = 0; i &amp;lt; inputs.seq_1.length; ++i) {
+                        var tmp = {}
+                        tmp[&#39;forward&#39;] = inputs.seq_1[i];
+                        tmp[&#39;reverse&#39;] = inputs.seq_2[i];
+                        tmp[&#39;seqid&#39;] = inputs.seqid;
+                        tmp[&#39;seed&#39;] = [inputs.seed[i]];
+                        tmp[&#39;number&#39;] = [inputs.number[i]];
+                        tmp[&#39;rep&#39;] = [inputs.rep[i]];
+                        ret.push(tmp);
+                    }
+                    return { &#39;fastq_pair_out&#39; : ret }
+                }
+        in:
+            seq_1: subsample_1/seqtkout
+            seq_2: subsample_2/seqtkout
+            seqid: seqid
+            seed: seed
+            number: number
+            rep: rep
+        out:
+            [ fastq_pair_out ]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;In this step, I use the &lt;code&gt;ExpressionTool&lt;/code&gt; to collect the
+outputs from steps 1 and 2 and build &lt;code&gt;FilePair&lt;/code&gt; objects,
+and generate an array of &lt;code&gt;FilePair&lt;/code&gt; objects to be the final
+output of this &lt;code&gt;Workflow&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;The principles from the previous steps apply here too. The one
+gotcha of writing the step in this way, is that it can be a bit
+confusing with all the &lt;code&gt;inputs&lt;/code&gt; and &lt;code&gt;outputs&lt;/code&gt;. I should also mention again
+that this is probably not very desirable way of organising your code. If
+you would like to reuse this &lt;code&gt;ExpressionTool&lt;/code&gt; in other workflows, you would
+be better off writing it out to a separate file, as we demonstrated in
+steps 1 and 2 of this workflow.&lt;/p&gt;
+
+&lt;p&gt;There are two things I want to call attention to here. First, to how &lt;code&gt;array&lt;/code&gt;s are specified:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-yaml&#34;&gt;                seq_1:
+                    type:
+                        type: array
+                        items: File
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;If you follow all the input plumbing, you should figure out that
+&lt;code&gt;seq_1&lt;/code&gt; is the array of &lt;code&gt;Files&lt;/code&gt; outputted by step 1. But,
+remember that when writing the &lt;code&gt;inputs&lt;/code&gt; section, we need to
+specify the &lt;code&gt;type&lt;/code&gt; of each input. Because the elements of an
+&lt;code&gt;array&lt;/code&gt; can be of many different types, we need to specify what
+is the type of the elements of this particular &lt;code&gt;array&lt;/code&gt;. Another way
+of doing this would be to use the &lt;code&gt;File[]&lt;/code&gt; notation. The reason for
+this odd notation (i.e., repetition of &lt;code&gt;type&lt;/code&gt;) is because &lt;code&gt;array&lt;/code&gt;s
+are represented internally as &lt;code&gt;{&amp;quot;type&amp;quot;: &amp;quot;array&amp;quot;, &amp;quot;items&amp;quot;: &amp;lt;T&amp;gt;}&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;The second point I wish to make relates to how &lt;code&gt;ExpressionTool&lt;/code&gt;s are
+written. Note that there is &lt;strong&gt;no&lt;/strong&gt; &lt;code&gt;baseCommand&lt;/code&gt; keyword here, but rather the
+&lt;code&gt;expression&lt;/code&gt; key is used. I also used the standard &lt;code&gt;YAML&lt;/code&gt; notation &lt;code&gt;expression: &amp;gt;&lt;/code&gt; to
+indicate that the &lt;code&gt;value&lt;/code&gt; for that &lt;code&gt;key&lt;/code&gt; will span multiple lines, and new lines
+should be ignored (if new lines were important, then I would use the &lt;code&gt;expression: |&lt;/code&gt;
+notation). The actual expression presented here just loops over the
+arrays outputted by steps 1 and 2, and builds individual &lt;code&gt;FilePair&lt;/code&gt; objects
+for each of the sub-sampled pairs created at those steps.&lt;/p&gt;
+
+&lt;h1 id=&#34;wrapping-up&#34;&gt;Wrapping up&amp;hellip;&lt;/h1&gt;
+
+&lt;p&gt;That is it! You now should have the basics to build your own
+workflows in CWL. What you need are individual &lt;code&gt;Command Line Tool Description&lt;/code&gt;s
+or &lt;code&gt;ExpressionTools&lt;/code&gt; that will form the building blocks for the steps of a workflow,
+and then put them together using the &lt;code&gt;Workflow Description&lt;/code&gt;. You can nest sub-workflows into larger workflows
+by making individual steps in a workflow call other &lt;code&gt;Workflow Description&lt;/code&gt;s.
+The examples I have provided in these two posts are, for instance, only a small sub-workflow
+of my larger limit of detection workflow. The full workflow code can
+be found on my &lt;code&gt;GitHub&lt;/code&gt; in the &lt;a href=&#34;https://github.com/andersgs/cwl_flows&#34; target=&#34;_blank&#34;&gt;cwl_flows&lt;/a&gt; repo (more
+detailed documentation still to be added).&lt;/p&gt;
+
+&lt;p&gt;I would like to finish this post by thanking Michael Crusoe
+(&lt;a href=&#34;https://twitter.com/biocrusoe&#34; target=&#34;_blank&#34;&gt;@biocrusoe&lt;/a&gt;) for help setting up some of this
+workflow (check out my question and answers on &lt;a href=&#34;https://www.biostars.org/p/245032/&#34; target=&#34;_blank&#34;&gt;BioStars&lt;/a&gt;).
+This highlighted the incredible support available to build CWL flows currently
+available. I&amp;rsquo;ll talk more about this in the next
+post. In the meantime, I highly recommend checking out the
+&lt;a href=&#34;https://www.biostars.org/t/cwl/&#34; target=&#34;_blank&#34;&gt;BioStars&lt;/a&gt; CWL tag if you
+ever get stuck!&lt;/p&gt;
+
+&lt;div class=&#34;alert alert-info&#34;&gt;
+  &lt;p&gt;You can get great support with your workflows through the
+CWL tag on &lt;a href=&#34;https://www.biostars.org/t/cwl/&#34; target=&#34;_blank&#34;&gt;BioStars&lt;/a&gt;&lt;/p&gt;
+
+&lt;/div&gt;
+
+</description>
+    </item>
+    
+    <item>
       <title>A first taste of the common workflow language, part 1.</title>
       <link>/post/2017-05-07-taste-of-cwl-part1/</link>
       <pubDate>Sun, 07 May 2017 12:00:00 +0000</pubDate>
