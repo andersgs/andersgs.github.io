@@ -2,7 +2,7 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>R on dsci&#39;nomics: data science with a side of genomics</title>
-    <link>/tags/r/</link>
+    <link>https://dscinomics.com/tags/r/</link>
     <description>Recent content in R on dsci&#39;nomics: data science with a side of genomics</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
@@ -12,10 +12,10 @@
     
     <item>
       <title>R upgrading can be a smooth process</title>
-      <link>/post/2017-04-28-upgrade-to-r-3-4-0/</link>
+      <link>https://dscinomics.com/post/2017-04-28-upgrade-to-r-3-4-0/</link>
       <pubDate>Fri, 28 Apr 2017 12:00:00 +0000</pubDate>
       
-      <guid>/post/2017-04-28-upgrade-to-r-3-4-0/</guid>
+      <guid>https://dscinomics.com/post/2017-04-28-upgrade-to-r-3-4-0/</guid>
       <description>
 
 &lt;h1 id=&#34;the-problem&#34;&gt;The problem&lt;/h1&gt;

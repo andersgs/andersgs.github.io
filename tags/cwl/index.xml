@@ -2,7 +2,7 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Cwl on dsci&#39;nomics: data science with a side of genomics</title>
-    <link>/tags/cwl/</link>
+    <link>https://dscinomics.com/tags/cwl/</link>
     <description>Recent content in Cwl on dsci&#39;nomics: data science with a side of genomics</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
@@ -12,15 +12,15 @@
     
     <item>
       <title>A first taste of the common workflow language, part 2.</title>
-      <link>/post/2017-05-10-taste-of-cwl-part2/</link>
+      <link>https://dscinomics.com/post/2017-05-10-taste-of-cwl-part2/</link>
       <pubDate>Wed, 10 May 2017 12:00:00 +0000</pubDate>
       
-      <guid>/post/2017-05-10-taste-of-cwl-part2/</guid>
+      <guid>https://dscinomics.com/post/2017-05-10-taste-of-cwl-part2/</guid>
       <description>
 
 &lt;h1 id=&#34;welcome-back-to-part-2-of-my-cwl-series&#34;&gt;Welcome back to part 2 of my CWL series&lt;/h1&gt;
 
-&lt;p&gt;In my previous &lt;a href=&#34;/post/2017-05-07-taste-of-cwl-part1/&#34; target=&#34;_blank&#34;&gt;post&lt;/a&gt;, I talked about some of things that got me excited about CWL, and
+&lt;p&gt;In my previous &lt;a href=&#34;https://dscinomics.com/post/2017-05-07-taste-of-cwl-part1/&#34; target=&#34;_blank&#34;&gt;post&lt;/a&gt;, I talked about some of things that got me excited about CWL, and
 I introduced the &lt;code&gt;Command Line Tool Description&lt;/code&gt;. Here, I will introduce the &lt;code&gt;Workflow Description&lt;/code&gt;,
 which uses the &lt;code&gt;Command Line Tool Description&lt;/code&gt; as a building block. I will do this by continuing with my
 limit of detection problem. I am focusing on the first step of that problem, which was producing
@@ -256,7 +256,7 @@ with another &lt;code&gt;Workflow Description&lt;/code&gt; (allowing you to nest
 or you could specify what to run within the document
 (i.e., I could just copy-paste the
 &lt;code&gt;Command Line Tool Description&lt;/code&gt; from the previous
-&lt;a href=&#34;/post/2017-05-07-taste-of-cwl-part1/&#34; target=&#34;_blank&#34;&gt;post&lt;/a&gt; directly
+&lt;a href=&#34;https://dscinomics.com/post/2017-05-07-taste-of-cwl-part1/&#34; target=&#34;_blank&#34;&gt;post&lt;/a&gt; directly
 here). This, however, is not desirable. By keeping the definitions
 separate, I am free to use it in other workflows. Below, I&amp;rsquo;ll give
 a cool example where I run some custom JavaScript, and explicitly
@@ -271,7 +271,7 @@ is crucial for your &lt;code&gt;Workflow&lt;/code&gt; to work properly.&lt;/p&gt
 &lt;p&gt;In the &lt;code&gt;in&lt;/code&gt;, we use a series of &lt;code&gt;key&lt;/code&gt;:&lt;code&gt;value&lt;/code&gt; pairs. The &lt;code&gt;keys&lt;/code&gt; are the values
 expected by the tool being run in the current step. If you
 look back at the previous
-&lt;a href=&#34;/post/2017-05-07-taste-of-cwl-part1/&#34; target=&#34;_blank&#34;&gt;post&lt;/a&gt;
+&lt;a href=&#34;https://dscinomics.com/post/2017-05-07-taste-of-cwl-part1/&#34; target=&#34;_blank&#34;&gt;post&lt;/a&gt;
 you will notice that the inputs for &lt;code&gt;seqtk_sample.cwl&lt;/code&gt; are
 named &lt;code&gt;fastq&lt;/code&gt;, &lt;code&gt;seed&lt;/code&gt;, &lt;code&gt;rep&lt;/code&gt;, etc. Under &lt;code&gt;read_number&lt;/code&gt; I
 use the notation &lt;code&gt;${}&lt;/code&gt; to write a very small JavaScript script
@@ -459,10 +459,10 @@ CWL tag on &lt;a href=&#34;https://www.biostars.org/t/cwl/&#34; target=&#34;_bla
     
     <item>
       <title>A first taste of the common workflow language, part 1.</title>
-      <link>/post/2017-05-07-taste-of-cwl-part1/</link>
+      <link>https://dscinomics.com/post/2017-05-07-taste-of-cwl-part1/</link>
       <pubDate>Sun, 07 May 2017 12:00:00 +0000</pubDate>
       
-      <guid>/post/2017-05-07-taste-of-cwl-part1/</guid>
+      <guid>https://dscinomics.com/post/2017-05-07-taste-of-cwl-part1/</guid>
       <description>
 
 &lt;h1 id=&#34;some-motivation&#34;&gt;Some motivation&amp;hellip;&lt;/h1&gt;

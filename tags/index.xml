@@ -2,7 +2,7 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Tags on dsci&#39;nomics: data science with a side of genomics</title>
-    <link>/tags/</link>
+    <link>https://dscinomics.com/tags/</link>
     <description>Recent content in Tags on dsci&#39;nomics: data science with a side of genomics</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
@@ -12,29 +12,29 @@
     
     <item>
       <title>Content tagged as &#39;Academic&#39;</title>
-      <link>/tags/academic/</link>
+      <link>https://dscinomics.com/tags/academic/</link>
       <pubDate>Sun, 01 Jan 2017 00:00:00 +0000</pubDate>
       
-      <guid>/tags/academic/</guid>
+      <guid>https://dscinomics.com/tags/academic/</guid>
       <description>&lt;p&gt;Here is a list of all the content that has been tagged as &lt;em&gt;academic&lt;/em&gt;.&lt;/p&gt;
 </description>
     </item>
     
     <item>
       <title>Cwl</title>
-      <link>/tags/cwl/</link>
+      <link>https://dscinomics.com/tags/cwl/</link>
       <pubDate>Wed, 10 May 2017 12:00:00 +0000</pubDate>
       
-      <guid>/tags/cwl/</guid>
+      <guid>https://dscinomics.com/tags/cwl/</guid>
       <description></description>
     </item>
     
     <item>
       <title>R</title>
-      <link>/tags/r/</link>
+      <link>https://dscinomics.com/tags/r/</link>
       <pubDate>Fri, 28 Apr 2017 12:00:00 +0000</pubDate>
       
-      <guid>/tags/r/</guid>
+      <guid>https://dscinomics.com/tags/r/</guid>
       <description></description>
     </item>
     

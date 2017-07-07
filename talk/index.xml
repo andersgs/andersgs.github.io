@@ -2,7 +2,7 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Recent &amp; Upcoming Talks on dsci&#39;nomics: data science with a side of genomics</title>
-    <link>/talk/</link>
+    <link>https://dscinomics.com/talk/</link>
     <description>Recent content in Recent &amp; Upcoming Talks on dsci&#39;nomics: data science with a side of genomics</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
@@ -12,10 +12,10 @@
     
     <item>
       <title>Teaching about using R, phylogenetics, and molecular clocks in epidemiology.</title>
-      <link>/talk/montreal_june2017/</link>
+      <link>https://dscinomics.com/talk/montreal_june2017/</link>
       <pubDate>Mon, 19 Jun 2017 00:00:00 +0000</pubDate>
       
-      <guid>/talk/montreal_june2017/</guid>
+      <guid>https://dscinomics.com/talk/montreal_june2017/</guid>
       <description></description>
     </item>
     

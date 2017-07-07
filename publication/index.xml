@@ -2,7 +2,7 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Publications on dsci&#39;nomics: data science with a side of genomics</title>
-    <link>/publication/</link>
+    <link>https://dscinomics.com/publication/</link>
     <description>Recent content in Publications on dsci&#39;nomics: data science with a side of genomics</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
@@ -12,19 +12,19 @@
     
     <item>
       <title>A phylogenomic framework for assessing the global emergence and evolution of clonal complex 398 methicillin-resistant Staphylococcus aureus</title>
-      <link>/publication/nz_cc398/</link>
+      <link>https://dscinomics.com/publication/nz_cc398/</link>
       <pubDate>Tue, 31 Jan 2017 00:00:00 +0000</pubDate>
       
-      <guid>/publication/nz_cc398/</guid>
+      <guid>https://dscinomics.com/publication/nz_cc398/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Diet and Trophic Structure in a Community of Fruit-Eating Bats in Lacandon Forest, México</title>
-      <link>/publication/mexican_fruit-eating_bats/</link>
+      <link>https://dscinomics.com/publication/mexican_fruit-eating_bats/</link>
       <pubDate>Tue, 19 Feb 2008 00:00:00 +0000</pubDate>
       
-      <guid>/publication/mexican_fruit-eating_bats/</guid>
+      <guid>https://dscinomics.com/publication/mexican_fruit-eating_bats/</guid>
       <description></description>
     </item>
     
